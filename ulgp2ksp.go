@@ -81,7 +81,7 @@ func (s *ULGP2KSPStats) Gather(acc telegraf.Accumulator) error {
         "atualizado":  age.Format("20060102150405"),
     }
 
-    acc.AddFields("ulg", fields, tags)
+    acc.AddCounter("ulg", fields, tags)
 
     return nil
 }
