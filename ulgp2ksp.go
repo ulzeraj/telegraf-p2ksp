@@ -5,7 +5,7 @@ import (
     "fmt"
     "log"
     "strings"
-//    "strconv"
+    "strconv"
     "io/ioutil"
     "path/filepath"
 
@@ -69,16 +69,20 @@ func (s *ULGP2KSPStats) Gather(acc telegraf.Accumulator) error {
 	log.Fatal(err)
     }
 
-    age  := fileage.ModTime()
-    lote := strings.Replace(string(content), "\n","",-1)
+    age          := fileage.ModTime()
+    lotestr      := strings.Replace(string(content), "\n","",-1)
+    loteint, err := strconv.Atoi(lotestr)
+    if err != nil {
+        log.Fatal(err)
+    }
 
     tags := map[string]string{
         "loja":  werkstr,
     }
 
     fields := map[string]interface{}{
-        "lote":        lote,
-        "atualizado":  age.Format("20060102150405"),
+        "lote":        loteint,
+	"atualizado":  age.Format("2006-01-02-15:04:05"),
     }
 
     acc.AddCounter("ulg", fields, tags)
