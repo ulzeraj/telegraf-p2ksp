@@ -32,6 +32,7 @@ func (s *ULGP2KSPStats) Gather(acc telegraf.Accumulator) error {
     instances := []string{}
     dirpath   := "/p2ksp"
     ulgpath   := "bin/componentes/ultimaULG.txt"
+    verfile   := "/p2ksp/bin/versaoSP.dat"
     regexp    := "sp_lj"
     f, err    := os.Open(dirpath)
 
@@ -70,11 +71,19 @@ func (s *ULGP2KSPStats) Gather(acc telegraf.Accumulator) error {
     }
 
     age          := fileage.ModTime()
-    lotestr      := strings.Replace(string(content), "\n","",-1)
+    lotestr      := strings.Replace(string(content), "\n", "", -1)
     loteint, err := strconv.Atoi(lotestr)
     if err != nil {
         log.Fatal(err)
     }
+
+    version, err := ioutil.ReadFile(verfile)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    verinfo     := strings.Replace(string(version), "VERSAO_SP = ", "", -1)
+    verstr      := strings.Replace(string(verinfo), "\n", "", -1)
 
     tags := map[string]string{
         "loja":  werkstr,
@@ -82,10 +91,12 @@ func (s *ULGP2KSPStats) Gather(acc telegraf.Accumulator) error {
 
     fields := map[string]interface{}{
         "lote":        loteint,
-	"atualizado":  age.Format("2006-01-02-15:04:05"),
+        "loja":        werkstr,
+        "vers":        verstr,
+        "atualizado":  age.Format("2006-01-02-15:04:05"),
     }
 
-    acc.AddCounter("ulg", fields, tags)
+    acc.AddFields("ulgp2ksp", fields, tags)
 
     return nil
 }
